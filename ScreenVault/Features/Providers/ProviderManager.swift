@@ -174,26 +174,26 @@ final class ProviderManager: ObservableObject {
     ) -> (any ProviderConnector)? {
         switch account.providerType {
         case .googleDrive:
-            return GoogleDriveConnector(
-                account: account,
-                tokens: tokens,
-                clientID: config.clientID,
-                redirectURI: config.redirectURI
-            )
+            do {
+                return try GoogleDriveConnector(accountID: account.accountID)
+            } catch {
+                SVLogger.provider.error("ProviderManager: GoogleDriveConnector init failed: \(error.localizedDescription, privacy: .public)")
+                return nil
+            }
         case .oneDrive:
-            return OneDriveConnector(
-                account: account,
-                tokens: tokens,
-                clientID: config.clientID,
-                redirectURI: config.redirectURI
-            )
+            do {
+                return try OneDriveConnector(accountID: account.accountID)
+            } catch {
+                SVLogger.provider.error("ProviderManager: OneDriveConnector init failed: \(error.localizedDescription, privacy: .public)")
+                return nil
+            }
         case .dropbox:
-            return DropboxConnector(
-                account: account,
-                tokens: tokens,
-                clientID: config.clientID,
-                redirectURI: config.redirectURI
-            )
+            do {
+                return try DropboxConnector(accountID: account.accountID)
+            } catch {
+                SVLogger.provider.error("ProviderManager: DropboxConnector init failed: \(error.localizedDescription, privacy: .public)")
+                return nil
+            }
         case .iCloud:
             // iCloud は CloudKit ベースのため OAuth コネクタは不要
             SVLogger.provider.info("ProviderManager: iCloud connector is handled natively")
@@ -207,144 +207,3 @@ final class ProviderManager: ObservableObject {
     }
 }
 
-// MARK: - Stub コネクタ実装
-// Phase 1.4〜1.6 で本実装に差し替える。
-// ProviderConnector プロトコルを満たすための最小スタブ。
-
-// MARK: GoogleDriveConnector
-
-final class GoogleDriveConnector: ProviderConnector, @unchecked Sendable {
-    let providerType: ProviderType = .googleDrive
-
-    private let account: ProviderAccount
-    private var tokens: OAuthTokens
-    private let clientID: String
-    private let redirectURI: String
-
-    init(account: ProviderAccount, tokens: OAuthTokens, clientID: String, redirectURI: String) {
-        self.account = account
-        self.tokens = tokens
-        self.clientID = clientID
-        self.redirectURI = redirectURI
-    }
-
-    func authenticate() async throws {
-        SVLogger.provider.info("GoogleDriveConnector: authenticate (re-auth) for \(self.account.accountID, privacy: .public)")
-        let newTokens = try await OAuthManager.shared.startOAuthFlow(
-            provider: .googleDrive,
-            clientID: clientID,
-            scopes: [],
-            redirectURI: redirectURI
-        )
-        tokens = newTokens
-    }
-
-    func ensureFolder(pathComponents: [String]) async throws -> String {
-        SVLogger.provider.info("GoogleDriveConnector: ensureFolder \(pathComponents.joined(separator: "/"), privacy: .public)")
-        // Phase 1.4 で実装
-        throw ScreenVaultError.unknown("GoogleDrive: ensureFolder は Phase 1.4 で実装予定")
-    }
-
-    func uploadResumable(fileURL: URL, remoteFolderID: String, fileName: String) async throws -> String {
-        SVLogger.provider.info("GoogleDriveConnector: uploadResumable \(fileName, privacy: .public)")
-        throw ScreenVaultError.unknown("GoogleDrive: uploadResumable は Phase 1.4 で実装予定")
-    }
-
-    func setSharing(remoteFileID: String, policy: SharingPolicy) async throws {
-        SVLogger.provider.info("GoogleDriveConnector: setSharing \(remoteFileID, privacy: .public)")
-        throw ScreenVaultError.unknown("GoogleDrive: setSharing は Phase 1.4 で実装予定")
-    }
-
-    func getRemoteHash(remoteFileID: String) async throws -> String? {
-        SVLogger.provider.info("GoogleDriveConnector: getRemoteHash \(remoteFileID, privacy: .public)")
-        throw ScreenVaultError.unknown("GoogleDrive: getRemoteHash は Phase 1.4 で実装予定")
-    }
-}
-
-// MARK: OneDriveConnector
-
-final class OneDriveConnector: ProviderConnector, @unchecked Sendable {
-    let providerType: ProviderType = .oneDrive
-
-    private let account: ProviderAccount
-    private var tokens: OAuthTokens
-    private let clientID: String
-    private let redirectURI: String
-
-    init(account: ProviderAccount, tokens: OAuthTokens, clientID: String, redirectURI: String) {
-        self.account = account
-        self.tokens = tokens
-        self.clientID = clientID
-        self.redirectURI = redirectURI
-    }
-
-    func authenticate() async throws {
-        let newTokens = try await OAuthManager.shared.startOAuthFlow(
-            provider: .oneDrive,
-            clientID: clientID,
-            scopes: [],
-            redirectURI: redirectURI
-        )
-        tokens = newTokens
-    }
-
-    func ensureFolder(pathComponents: [String]) async throws -> String {
-        throw ScreenVaultError.unknown("OneDrive: ensureFolder は Phase 1.5 で実装予定")
-    }
-
-    func uploadResumable(fileURL: URL, remoteFolderID: String, fileName: String) async throws -> String {
-        throw ScreenVaultError.unknown("OneDrive: uploadResumable は Phase 1.5 で実装予定")
-    }
-
-    func setSharing(remoteFileID: String, policy: SharingPolicy) async throws {
-        throw ScreenVaultError.unknown("OneDrive: setSharing は Phase 1.5 で実装予定")
-    }
-
-    func getRemoteHash(remoteFileID: String) async throws -> String? {
-        throw ScreenVaultError.unknown("OneDrive: getRemoteHash は Phase 1.5 で実装予定")
-    }
-}
-
-// MARK: DropboxConnector
-
-final class DropboxConnector: ProviderConnector, @unchecked Sendable {
-    let providerType: ProviderType = .dropbox
-
-    private let account: ProviderAccount
-    private var tokens: OAuthTokens
-    private let clientID: String
-    private let redirectURI: String
-
-    init(account: ProviderAccount, tokens: OAuthTokens, clientID: String, redirectURI: String) {
-        self.account = account
-        self.tokens = tokens
-        self.clientID = clientID
-        self.redirectURI = redirectURI
-    }
-
-    func authenticate() async throws {
-        let newTokens = try await OAuthManager.shared.startOAuthFlow(
-            provider: .dropbox,
-            clientID: clientID,
-            scopes: [],
-            redirectURI: redirectURI
-        )
-        tokens = newTokens
-    }
-
-    func ensureFolder(pathComponents: [String]) async throws -> String {
-        throw ScreenVaultError.unknown("Dropbox: ensureFolder は Phase 1.6 で実装予定")
-    }
-
-    func uploadResumable(fileURL: URL, remoteFolderID: String, fileName: String) async throws -> String {
-        throw ScreenVaultError.unknown("Dropbox: uploadResumable は Phase 1.6 で実装予定")
-    }
-
-    func setSharing(remoteFileID: String, policy: SharingPolicy) async throws {
-        throw ScreenVaultError.unknown("Dropbox: setSharing は Phase 1.6 で実装予定")
-    }
-
-    func getRemoteHash(remoteFileID: String) async throws -> String? {
-        throw ScreenVaultError.unknown("Dropbox: getRemoteHash は Phase 1.6 で実装予定")
-    }
-}

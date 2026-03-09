@@ -43,7 +43,7 @@ final class IngestPipeline: @unchecked Sendable {
             let descriptor = FetchDescriptor<Asset>(
                 predicate: #Predicate { $0.contentHashSHA256 == sha256Hash }
             )
-            if let existing = try? modelContext.fetch(descriptor).first {
+            if let existing = try modelContext.fetch(descriptor).first {
                 SVLogger.ingest.info("IngestPipeline: duplicate detected, skipping \(fileURL.lastPathComponent, privacy: .public) existing=\(existing.assetID, privacy: .public)")
                 return existing
             }

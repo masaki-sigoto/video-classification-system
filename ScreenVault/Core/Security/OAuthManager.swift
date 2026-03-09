@@ -25,46 +25,6 @@ struct OAuthTokens: Codable, Sendable {
     }
 }
 
-// MARK: - ScreenVaultError (OAuth 関連)
-
-enum ScreenVaultError: LocalizedError {
-    case oauthUserCancelled
-    case oauthCallbackURLInvalid
-    case oauthAuthorizationCodeMissing
-    case oauthTokenRequestFailed(statusCode: Int, body: String)
-    case oauthTokenDecodeFailed(underlying: Error)
-    case oauthRefreshTokenMissing
-    case keychainSaveFailed(underlying: Error)
-    case keychainLoadFailed(underlying: Error)
-    case providerNotConnected(accountID: String)
-    case unknown(String)
-
-    var errorDescription: String? {
-        switch self {
-        case .oauthUserCancelled:
-            return "OAuth認証がユーザーによってキャンセルされました。"
-        case .oauthCallbackURLInvalid:
-            return "コールバックURLが不正です。"
-        case .oauthAuthorizationCodeMissing:
-            return "認可コードが取得できませんでした。"
-        case let .oauthTokenRequestFailed(code, body):
-            return "トークン取得に失敗しました (HTTP \(code)): \(body)"
-        case let .oauthTokenDecodeFailed(err):
-            return "トークンのデコードに失敗しました: \(err.localizedDescription)"
-        case .oauthRefreshTokenMissing:
-            return "リフレッシュトークンがありません。再認証が必要です。"
-        case let .keychainSaveFailed(err):
-            return "Keychain への保存に失敗しました: \(err.localizedDescription)"
-        case let .keychainLoadFailed(err):
-            return "Keychain からの読み込みに失敗しました: \(err.localizedDescription)"
-        case let .providerNotConnected(id):
-            return "アカウント '\(id)' は接続されていません。"
-        case let .unknown(msg):
-            return msg
-        }
-    }
-}
-
 // MARK: - Provider OAuth メタデータ
 
 /// プロバイダごとの OAuth エンドポイント情報
@@ -206,7 +166,7 @@ final class OAuthManager: NSObject, @unchecked Sendable {
                 continuation.resume(returning: url)
             }
             session.presentationContextProvider = self
-            session.prefersEphemeralWebBrowserSession = false
+            session.prefersEphemeralWebBrowserSession = true
             session.start()
         }
 
@@ -363,7 +323,9 @@ final class OAuthManager: NSObject, @unchecked Sendable {
     }
 
     private func percentEncoded(_ string: String) -> String {
-        string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? string
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        return string.addingPercentEncoding(withAllowedCharacters: allowed) ?? string
     }
 
     /// リダイレクト URI からカスタムスキームを取り出す

@@ -15,6 +15,32 @@ enum ScreenVaultError: LocalizedError {
     /// アクセストークンの有効期限が切れ、リフレッシュも失敗した
     case uploadSessionExpired(provider: ProviderType)
 
+    // MARK: - OAuth フロー固有
+
+    /// ユーザーが OAuth 認証をキャンセルした
+    case oauthUserCancelled
+
+    /// OAuth コールバック URL が不正
+    case oauthCallbackURLInvalid
+
+    /// OAuth コールバックに認可コードが含まれていない
+    case oauthAuthorizationCodeMissing
+
+    /// トークンエンドポイントへのリクエストが失敗した
+    case oauthTokenRequestFailed(statusCode: Int, body: String)
+
+    /// トークンレスポンスのデコードに失敗した
+    case oauthTokenDecodeFailed(underlying: Error)
+
+    /// リフレッシュトークンが存在しない（再認証が必要）
+    case oauthRefreshTokenMissing
+
+    /// Keychain への保存に失敗した
+    case keychainSaveFailed(underlying: Error)
+
+    /// Keychain からの読み込みに失敗した
+    case keychainLoadFailed(underlying: Error)
+
     // MARK: - アップロード関連
 
     /// アップロード処理が失敗した
@@ -102,6 +128,30 @@ enum ScreenVaultError: LocalizedError {
 
         case .bookmarkResolutionFailed(let key):
             return "フォルダアクセス権の復元に失敗しました (key: \(key))。再度フォルダを選択してください。"
+
+        case .oauthUserCancelled:
+            return "OAuth 認証がユーザーによってキャンセルされました。"
+
+        case .oauthCallbackURLInvalid:
+            return "コールバック URL が不正です。"
+
+        case .oauthAuthorizationCodeMissing:
+            return "認可コードが取得できませんでした。"
+
+        case .oauthTokenRequestFailed(let code, let body):
+            return "トークン取得に失敗しました (HTTP \(code)): \(body)"
+
+        case .oauthTokenDecodeFailed(let err):
+            return "トークンのデコードに失敗しました: \(err.localizedDescription)"
+
+        case .oauthRefreshTokenMissing:
+            return "リフレッシュトークンがありません。再認証が必要です。"
+
+        case .keychainSaveFailed(let err):
+            return "Keychain への保存に失敗しました: \(err.localizedDescription)"
+
+        case .keychainLoadFailed(let err):
+            return "Keychain からの読み込みに失敗しました: \(err.localizedDescription)"
         }
     }
 
@@ -134,6 +184,16 @@ enum ScreenVaultError: LocalizedError {
             return "アプリを再起動して再試行してください。問題が続く場合は再インストールをお試しください。"
         case .bookmarkResolutionFailed:
             return "設定画面で監視フォルダを再選択してください。"
+        case .oauthUserCancelled:
+            return "再度サインインボタンを押して認証を行ってください。"
+        case .oauthCallbackURLInvalid, .oauthAuthorizationCodeMissing:
+            return "プロバイダの設定を確認し、再度サインインしてください。"
+        case .oauthTokenRequestFailed, .oauthTokenDecodeFailed:
+            return "ネットワーク接続を確認し、再度サインインしてください。"
+        case .oauthRefreshTokenMissing:
+            return "設定画面からプロバイダを再接続してください。"
+        case .keychainSaveFailed, .keychainLoadFailed:
+            return "アプリを再起動して再試行してください。問題が続く場合は再インストールをお試しください。"
         }
     }
 }

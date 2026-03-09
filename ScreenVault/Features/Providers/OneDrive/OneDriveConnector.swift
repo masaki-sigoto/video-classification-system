@@ -382,7 +382,7 @@ private extension OneDriveConnector {
     }
 
     func generatePKCE() -> (verifier: String, challenge: String) {
-        var buffer = [UInt8](repeating: 0, count: 32)
+        var buffer = [UInt8](repeating: 0, count: 64)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
         let verifier = Data(buffer).base64URLEncoded()
 
@@ -634,7 +634,9 @@ private extension OneDriveConnector {
     }
 
     func formEncode(_ params: [String: String]) -> Data? {
-        params.map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")" }
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        return params.map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: allowed) ?? "")" }
             .joined(separator: "&")
             .data(using: .utf8)
     }

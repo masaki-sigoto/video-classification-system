@@ -161,24 +161,12 @@ final class ICloudConnector: ProviderConnector {
         let folderURL = URL(fileURLWithPath: remoteFolderID)
         let destinationURL = folderURL.appendingPathComponent(fileName)
 
-        // ファイルデータを読み取り
-        let fileData: Data
+        // NSFileCoordinator で協調コピー（Data(contentsOf:) によるメモリ全展開を避ける）
         do {
-            fileData = try Data(contentsOf: fileURL)
+            try await fileCoordinator.coordinatedCopy(from: fileURL, to: destinationURL)
         } catch {
             logger.error(
-                "iCloud: ソースファイル読み取り失敗 file=\(fileName, privacy: .public)"
-                + " error=\(error.localizedDescription, privacy: .public)"
-            )
-            throw ICloudConnectorError.fileCopyFailed(fileName: fileName, underlying: error)
-        }
-
-        // NSFileCoordinator で協調書き込み
-        do {
-            try await fileCoordinator.coordinatedWrite(to: destinationURL, data: fileData)
-        } catch {
-            logger.error(
-                "iCloud: 協調書き込み失敗 file=\(fileName, privacy: .public)"
+                "iCloud: 協調コピー失敗 file=\(fileName, privacy: .public)"
                 + " error=\(error.localizedDescription, privacy: .public)"
             )
             throw ICloudConnectorError.fileCopyFailed(fileName: fileName, underlying: error)

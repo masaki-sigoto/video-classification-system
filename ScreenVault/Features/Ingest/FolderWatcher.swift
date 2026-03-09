@@ -59,13 +59,25 @@ final class FolderWatcher: ObservableObject, @unchecked Sendable {
         SVLogger.ingest.info("FolderWatcher: start watching \(url.path, privacy: .public)")
 
         let pathsToWatch = [url.path] as CFArray
-        // passUnretained: FolderWatcher は呼び出し元が強参照を保持する前提。
-        // stopWatching() でストリームを解放するため、コールバック実行中に self が解放されることはない。
+        // passRetained: FSEventStream が info ポインタの所有権を持つ。
+        // retain コールバックで +1、release コールバックで -1 することで
+        // FSEventStream のライフタイム中は self が解放されないことを保証する。
+        // FSEventStreamCreate が retain コールバックを呼ぶため、passRetained 時の
+        // +1 は FSEventStreamCreate 完了後に consume される。
+        // FSEventStreamCreate 失敗時は passRetained で増加した参照を手動 release する。
+        let retained = Unmanaged.passRetained(self)
         var context = FSEventStreamContext(
             version: 0,
-            info: Unmanaged.passUnretained(self).toOpaque(),
-            retain: nil,
-            release: nil,
+            info: retained.toOpaque(),
+            retain: { ptr -> UnsafeRawPointer? in
+                guard let ptr else { return nil }
+                _ = Unmanaged<FolderWatcher>.fromOpaque(ptr).retain()
+                return ptr
+            },
+            release: { ptr in
+                guard let ptr else { return }
+                Unmanaged<FolderWatcher>.fromOpaque(ptr).release()
+            },
             copyDescription: nil
         )
 
@@ -85,6 +97,9 @@ final class FolderWatcher: ObservableObject, @unchecked Sendable {
             flags
         ) else {
             SVLogger.ingest.error("FolderWatcher: FSEventStreamCreate failed for \(url.path, privacy: .public)")
+            // FSEventStreamCreate が失敗した場合は retain コールバックが呼ばれないため、
+            // passRetained で増加させた参照カウントを手動で解放する。
+            retained.release()
             return
         }
 

@@ -152,7 +152,7 @@ final class UploadQueue: ObservableObject {
         let maxRetry = 10
         let baseDelay: TimeInterval = 1.0
 
-        while task.retryCount <= maxRetry {
+        while task.retryCount < maxRetry {
             guard !Task.isCancelled else {
                 SVLogger.upload.info("UploadQueue: task cancelled mid-retry taskID=\(task.taskID, privacy: .public)")
                 return

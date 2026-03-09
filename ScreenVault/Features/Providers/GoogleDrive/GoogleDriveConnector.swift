@@ -288,7 +288,7 @@ private extension GoogleDriveConnector {
             "code_verifier": codeVerifier
         ]
         request.httpBody = params
-            .map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")" }
+            .map { "\($0.key)=\(rfc3986Encoded($0.value))" }
             .joined(separator: "&")
             .data(using: .utf8)
 
@@ -322,7 +322,7 @@ private extension GoogleDriveConnector {
             "grant_type": "refresh_token"
         ]
         request.httpBody = params
-            .map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")" }
+            .map { "\($0.key)=\(rfc3986Encoded($0.value))" }
             .joined(separator: "&")
             .data(using: .utf8)
 
@@ -388,7 +388,7 @@ private extension GoogleDriveConnector {
 
     /// PKCE code_verifier と code_challenge（S256）を生成する。
     func generatePKCE() -> (verifier: String, challenge: String) {
-        var buffer = [UInt8](repeating: 0, count: 32)
+        var buffer = [UInt8](repeating: 0, count: 64)
         _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
         let verifier = Data(buffer).base64URLEncoded()
 
@@ -672,6 +672,13 @@ private extension GoogleDriveConnector {
         case "pdf": return "application/pdf"
         default: return "application/octet-stream"
         }
+    }
+
+    /// RFC 3986 準拠のパーセントエンコード（unreserved characters のみ許可）。
+    func rfc3986Encoded(_ string: String) -> String {
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        return string.addingPercentEncoding(withAllowedCharacters: allowed) ?? string
     }
 
     /// SharingScope を Google Drive の type 文字列に変換する。
