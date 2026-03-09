@@ -1,6 +1,12 @@
 import SwiftUI
 
+// MARK: - SettingsView
+
+/// 設定ウィンドウのルートビュー（600 × 500 pt）
 struct SettingsView: View {
+
+    @Environment(SyncViewModel.self) private var syncVM
+
     var body: some View {
         TabView {
             GeneralSettingsView()
@@ -17,28 +23,17 @@ struct SettingsView: View {
                 .tabItem {
                     Label("分類ルール", systemImage: "folder.badge.gearshape")
                 }
+
+            LogViewerView()
+                .tabItem {
+                    Label("ログ", systemImage: "doc.text.magnifyingglass")
+                }
+
+            FailedTasksView()
+                .tabItem {
+                    Label("失敗タスク", systemImage: "exclamationmark.circle")
+                }
         }
-        .frame(width: 500, height: 400)
-    }
-}
-
-struct GeneralSettingsView: View {
-    var body: some View {
-        Text("一般設定")
-            .padding()
-    }
-}
-
-struct ProvidersSettingsView: View {
-    var body: some View {
-        Text("クラウド接続設定")
-            .padding()
-    }
-}
-
-struct ClassificationSettingsView: View {
-    var body: some View {
-        Text("分類ルール設定")
-            .padding()
+        .frame(width: 600, height: 500)
     }
 }
