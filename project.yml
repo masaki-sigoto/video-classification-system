@@ -1,0 +1,50 @@
+name: ScreenVault
+options:
+  bundleIdPrefix: com.screenvault
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "26.3"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    PRODUCT_BUNDLE_IDENTIFIER: com.screenvault.app
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: 1
+    ENABLE_APP_SANDBOX: true
+    CODE_SIGN_ENTITLEMENTS: ScreenVault/Resources/ScreenVault.entitlements
+
+targets:
+  ScreenVault:
+    type: application
+    platform: macOS
+    sources:
+      - path: ScreenVault
+        excludes:
+          - "**/*Tests*"
+    resources:
+      - path: ScreenVault/Resources
+        excludes:
+          - "*.entitlements"
+    settings:
+      base:
+        INFOPLIST_FILE: ScreenVault/Resources/Info.plist
+        PRODUCT_NAME: ScreenVault
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+    entitlements:
+      path: ScreenVault/Resources/ScreenVault.entitlements
+
+  ScreenVaultTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: ScreenVaultTests
+    dependencies:
+      - target: ScreenVault
+    settings:
+      base:
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ScreenVault.app/Contents/MacOS/ScreenVault"
+        BUNDLE_LOADER: "$(TEST_HOST)"
