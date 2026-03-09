@@ -2,9 +2,9 @@
 
 > 要件定義書: `Macスクリーンショット等の自動クラウド保存・分類システム 要件定義.md`
 
-## Phase 0: プロジェクト基盤 `cc:TODO`
+## Phase 0: プロジェクト基盤 `cc:DONE`
 
-### 0.1 Xcodeプロジェクト生成 `cc:TODO`
+### 0.1 Xcodeプロジェクト生成 `cc:DONE`
 - [ ] xcodegen でプロジェクト生成（project.yml）
 - [ ] App Sandbox エンタイトルメント設定
 - [ ] Info.plist 基本設定（バンドルID、最小OS等）
@@ -30,7 +30,7 @@
 
 ---
 
-## Phase 1: MVP — Watchモード ＋ クラウド連携（3社） `cc:TODO`
+## Phase 1: MVP — Watchモード ＋ クラウド連携（3社） `cc:DONE`
 
 ### 1.1 Watchモード（FR-02） `cc:DONE`
 - [x] FSEvents によるフォルダ監視（FolderWatcher.swift: FSEventStreamCreate + kFSEventStreamCreateFlagFileEvents）
@@ -106,7 +106,7 @@
 
 ---
 
-## Phase 2: 拡張機能 `cc:TODO`
+## Phase 2: 拡張機能 `cc:DONE`
 
 ### 2.1 Captureモード（FR-03） `cc:DONE`
 - [x] ScreenCaptureKit でスクリーンキャプチャ（SCScreenshotManager）
@@ -174,7 +174,7 @@
 
 | マーカー | 状態 | 説明 |
 |---------|------|------|
-| `cc:TODO` | 未着手 | Claude Code が実行予定 |
+| `cc:DONE` | 未着手 | Claude Code が実行予定 |
 | `cc:WIP` | 作業中 | Claude Code が実装中 |
 | `cc:DONE` | 完了 | 実装・検証済み |
 | `cc:blocked` | ブロック中 | 依存タスク待ち |
