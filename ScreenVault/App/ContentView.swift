@@ -57,7 +57,7 @@ struct ContentView: View {
         case .syncing:
             Image(systemName: "arrow.triangle.2.circlepath")
                 .foregroundStyle(.blue)
-                .symbolEffect(.rotate, isActive: true)
+                .symbolEffect(.pulse, isActive: true)
         case .paused:
             Image(systemName: "pause.circle.fill")
                 .foregroundStyle(.orange)

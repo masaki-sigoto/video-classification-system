@@ -92,7 +92,7 @@ struct GeneralSettingsView: View {
                 ForEach(watchFolderPaths, id: \.self) { path in
                     HStack {
                         Image(systemName: "folder")
-                            .foregroundStyle(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                         Text(path)
                             .lineLimit(1)
                             .truncationMode(.middle)
@@ -144,7 +144,7 @@ struct GeneralSettingsView: View {
         HStack(spacing: 4) {
             Text(variable)
                 .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.accentColor)
+                .foregroundStyle(Color.accentColor)
             Text("—")
                 .foregroundStyle(.secondary)
             Text(description)

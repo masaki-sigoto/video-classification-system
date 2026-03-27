@@ -1,7 +1,7 @@
 import Foundation
 
 /// クラウドプロバイダの共通インターフェース
-protocol ProviderConnector {
+protocol ProviderConnector: Sendable {
     var providerType: ProviderType { get }
 
     /// OAuth認証を開始し、トークンをKeychainに格納する
@@ -20,7 +20,7 @@ protocol ProviderConnector {
     func getRemoteHash(remoteFileID: String) async throws -> String?
 }
 
-struct SharingPolicy {
+struct SharingPolicy: Sendable {
     var isShared: Bool
     var scope: SharingScope
     var role: SharingRole
@@ -28,13 +28,13 @@ struct SharingPolicy {
     static let privateOnly = SharingPolicy(isShared: false, scope: .owner, role: .viewer)
 }
 
-enum SharingScope: String {
+enum SharingScope: String, Sendable {
     case owner
     case organization
     case anyone
 }
 
-enum SharingRole: String {
+enum SharingRole: String, Sendable {
     case viewer
     case editor
 }

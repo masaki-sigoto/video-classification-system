@@ -91,7 +91,7 @@ enum DropboxError: Error, LocalizedError {
 
 /// Dropbox プロバイダコネクタ
 /// URLSession のみ使用（サードパーティSDK不使用）
-final class DropboxConnector: ProviderConnector {
+final class DropboxConnector: ProviderConnector, @unchecked Sendable {
 
     // MARK: ProviderConnector
 
@@ -517,7 +517,9 @@ private extension DropboxConnector {
             }
 
             try fileHandle.seek(toOffset: UInt64(offset))
-            let chunkData = try fileHandle.read(upToCount: chunkSize)
+            guard let chunkData = try fileHandle.read(upToCount: chunkSize) else {
+                break
+            }
 
             try await appendToSession(sessionID: sessionID,
                                       offset: offset,
@@ -528,7 +530,7 @@ private extension DropboxConnector {
 
         // 最終チャンクを読み込んで finish
         try fileHandle.seek(toOffset: UInt64(offset))
-        let finalChunkData = try fileHandle.read(upToCount: fileSize - offset)
+        let finalChunkData = try fileHandle.read(upToCount: fileSize - offset) ?? Data()
 
         let remoteID = try await finishSession(sessionID: sessionID,
                                                offset: offset,

@@ -74,7 +74,7 @@ enum GoogleDriveError: Error, LocalizedError {
 
 /// Google Drive プロバイダコネクタ
 /// URLSession のみ使用（サードパーティSDK不使用）
-final class GoogleDriveConnector: ProviderConnector {
+final class GoogleDriveConnector: ProviderConnector, @unchecked Sendable {
 
     // MARK: ProviderConnector
 
@@ -479,7 +479,7 @@ private extension GoogleDriveConnector {
                                       fileSize: Int) async throws -> URL {
         let token = try await validAccessToken()
 
-        var components = URLComponents(string: "\(GoogleDriveAPI.uploadEndpoint)?uploadType=resumable")!
+        let components = URLComponents(string: "\(GoogleDriveAPI.uploadEndpoint)?uploadType=resumable")!
         let sessionURL = components.url!
 
         var request = URLRequest(url: sessionURL)
@@ -525,7 +525,9 @@ private extension GoogleDriveConnector {
             let currentChunkSize = min(chunkSize, remainingBytes)
 
             try fileHandle.seek(toOffset: UInt64(offset))
-            let chunkData = try fileHandle.read(upToCount: currentChunkSize)
+            guard let chunkData = try fileHandle.read(upToCount: currentChunkSize) else {
+                break
+            }
 
             var request = URLRequest(url: sessionURI)
             request.httpMethod = "PUT"

@@ -4,7 +4,7 @@ import Foundation
 /// フォルダパスキーからリモートフォルダ ID を高速に引くために使う。
 /// 実際のプロダクションコードでは SwiftData（RemoteFolderCache）経由で永続化する。
 /// 全プロバイダコネクタから共有で利用する。
-final class RemoteFolderCacheStore {
+final class RemoteFolderCacheStore: @unchecked Sendable {
     static let shared = RemoteFolderCacheStore()
     private var cache: [String: String] = [:]
     private let lock = NSLock()

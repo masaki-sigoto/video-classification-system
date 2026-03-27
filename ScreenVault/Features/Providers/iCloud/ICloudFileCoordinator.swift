@@ -107,10 +107,7 @@ final class ICloudFileCoordinator: NSObject {
     ///   - destination: 移動先の URL
     /// - Throws: 協調取得または移動 I/O に失敗した場合
     func coordinatedMove(from source: URL, to destination: URL) async throws {
-        logger.debug(
-            "iCloudFileCoordinator: 協調移動開始 src=\(source.lastPathComponent, privacy: .public)"
-            + " dst=\(destination.lastPathComponent, privacy: .public)"
-        )
+        logger.debug("iCloudFileCoordinator: 協調移動開始 src=\(source.lastPathComponent, privacy: .public) dst=\(destination.lastPathComponent, privacy: .public)")
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             let coordinator = NSFileCoordinator()
@@ -147,10 +144,7 @@ final class ICloudFileCoordinator: NSObject {
             }
         }
 
-        logger.info(
-            "iCloudFileCoordinator: 協調移動完了 src=\(source.lastPathComponent, privacy: .public)"
-            + " dst=\(destination.lastPathComponent, privacy: .public)"
-        )
+        logger.info("iCloudFileCoordinator: 協調移動完了 src=\(source.lastPathComponent, privacy: .public) dst=\(destination.lastPathComponent, privacy: .public)")
     }
 
     // MARK: - Copy
@@ -162,10 +156,7 @@ final class ICloudFileCoordinator: NSObject {
     ///   - destination: コピー先の URL
     /// - Throws: 協調取得またはコピー I/O に失敗した場合
     func coordinatedCopy(from source: URL, to destination: URL) async throws {
-        logger.debug(
-            "iCloudFileCoordinator: 協調コピー開始 src=\(source.lastPathComponent, privacy: .public)"
-            + " dst=\(destination.lastPathComponent, privacy: .public)"
-        )
+        logger.debug("iCloudFileCoordinator: 協調コピー開始 src=\(source.lastPathComponent, privacy: .public) dst=\(destination.lastPathComponent, privacy: .public)")
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             let coordinator = NSFileCoordinator()

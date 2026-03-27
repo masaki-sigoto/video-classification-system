@@ -92,7 +92,7 @@ final class FolderWatcher: ObservableObject, @unchecked Sendable {
             fsEventCallback,
             &context,
             pathsToWatch,
-            FSEventStreamEventId(kFSEventsCurrentEventId),
+            FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
             0.5,   // latency (秒)
             flags
         ) else {
@@ -226,7 +226,8 @@ private func fsEventCallback(
     guard let info = clientCallBackInfo else { return }
     let watcher = Unmanaged<FolderWatcher>.fromOpaque(info).takeUnretainedValue()
 
-    guard let cfPaths = eventPaths as? NSArray as? [String] else { return }
+    let cfArray = Unmanaged<CFArray>.fromOpaque(eventPaths).takeUnretainedValue()
+    guard let cfPaths = cfArray as NSArray as? [String] else { return }
 
     var flagsArray: [FSEventStreamEventFlags] = []
     for i in 0 ..< numEvents {

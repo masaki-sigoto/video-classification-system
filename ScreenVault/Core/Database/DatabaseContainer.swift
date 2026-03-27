@@ -9,7 +9,7 @@ import SwiftData
 ///
 /// - Note: 全 `@Model` クラスをここに登録すること。登録漏れがあると
 ///   コンテキストへの挿入時にクラッシュする。
-final class DatabaseContainer {
+final class DatabaseContainer: @unchecked Sendable {
 
     // MARK: - シングルトン
 

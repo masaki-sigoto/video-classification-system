@@ -213,7 +213,7 @@ extension LogLevel {
 // MARK: - LogExportDocument
 
 struct LogExportDocument: FileDocument {
-    static var readableContentTypes: [UTType] = [.plainText]
+    static let readableContentTypes: [UTType] = [.plainText]
 
     let content: String
 

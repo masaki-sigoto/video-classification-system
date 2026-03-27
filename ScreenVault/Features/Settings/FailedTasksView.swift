@@ -9,12 +9,12 @@ import OSLog
 /// - 「再試行」「キャンセル」ボタン
 struct FailedTasksView: View {
 
-    @Query(
-        filter: #Predicate<UploadTask> { $0.status == UploadStatus.failed },
-        sort: \UploadTask.updatedAt,
-        order: .reverse
-    )
-    private var failedTasks: [UploadTask]
+    @Query(sort: \UploadTask.updatedAt, order: .reverse)
+    private var allTasks: [UploadTask]
+
+    private var failedTasks: [UploadTask] {
+        return allTasks.filter { $0.statusRawValue == "failed" }
+    }
 
     @Environment(\.modelContext) private var modelContext
     @Environment(SyncViewModel.self) private var syncVM
@@ -81,7 +81,7 @@ struct FailedTasksView: View {
     // MARK: - Actions
 
     private func retry(task: UploadTask) {
-        task.status = .pending
+        task.setStatus(.pending)
         task.updatedAt = .now
         trySave()
         syncVM.refreshStats(modelContext: modelContext)
@@ -89,7 +89,7 @@ struct FailedTasksView: View {
     }
 
     private func cancel(task: UploadTask) {
-        task.status = .cancelled
+        task.setStatus(.cancelled)
         task.updatedAt = .now
         trySave()
         syncVM.refreshStats(modelContext: modelContext)
@@ -98,7 +98,7 @@ struct FailedTasksView: View {
 
     private func retryAll() {
         for task in failedTasks {
-            task.status = .pending
+            task.setStatus(.pending)
             task.updatedAt = .now
         }
         trySave()

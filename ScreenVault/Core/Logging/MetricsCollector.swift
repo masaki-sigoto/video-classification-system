@@ -124,8 +124,8 @@ final class MetricsCollector: ObservableObject {
             return (0, 0, 0, 0)
         }
 
-        let successTasks = tasks.filter { $0.status == .completed }
-        let failedTasks  = tasks.filter { $0.status == .failed }
+        let successTasks = tasks.filter { $0.statusRawValue == UploadStatus.completed.rawValue }
+        let failedTasks  = tasks.filter { $0.statusRawValue == UploadStatus.failed.rawValue }
 
         let success = successTasks.count
         let failed  = failedTasks.count

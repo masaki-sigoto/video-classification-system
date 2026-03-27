@@ -91,10 +91,9 @@ final class SyncViewModel {
             todayIngestCount = try modelContext.fetchCount(assetDescriptor)
 
             // 失敗タスク件数
-            let failedDescriptor = FetchDescriptor<UploadTask>(
-                predicate: #Predicate { $0.status == UploadStatus.failed }
-            )
-            failedTaskCount = try modelContext.fetchCount(failedDescriptor)
+            let allTasksDescriptor = FetchDescriptor<UploadTask>()
+            let allTasks = try modelContext.fetch(allTasksDescriptor)
+            failedTaskCount = allTasks.filter { $0.statusRawValue == "failed" }.count
         } catch {
             SVLogger.general.error("SyncViewModel: stats 更新失敗 — \(error.localizedDescription, privacy: .public)")
         }

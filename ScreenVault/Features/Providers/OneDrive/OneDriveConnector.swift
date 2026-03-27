@@ -84,7 +84,7 @@ private struct OneDriveUploadSession {
 
 /// OneDrive（Microsoft Graph）プロバイダコネクタ
 /// URLSession のみ使用（MSAL SDK 不使用）
-final class OneDriveConnector: ProviderConnector {
+final class OneDriveConnector: ProviderConnector, @unchecked Sendable {
 
     // MARK: ProviderConnector
 
@@ -513,7 +513,9 @@ private extension OneDriveConnector {
             let currentChunkSize = min(chunkSize, remainingBytes)
 
             try fileHandle.seek(toOffset: UInt64(offset))
-            let chunkData = try fileHandle.read(upToCount: currentChunkSize)
+            guard let chunkData = try fileHandle.read(upToCount: currentChunkSize) else {
+                break
+            }
 
             // OneDrive では uploadUrl への PUT に Authorization ヘッダーを含めない
             var request = URLRequest(url: uploadSession.uploadURL)

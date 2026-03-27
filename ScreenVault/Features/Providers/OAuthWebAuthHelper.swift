@@ -3,7 +3,7 @@ import AuthenticationServices
 
 /// ASWebAuthenticationSession の presentationContext を提供する共有クラス。
 /// Google Drive / OneDrive / Dropbox コネクタから共通で利用する。
-final class OAuthPresentationContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
+final class OAuthPresentationContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding, @unchecked Sendable {
     static let shared = OAuthPresentationContextProvider()
     private override init() {}
 

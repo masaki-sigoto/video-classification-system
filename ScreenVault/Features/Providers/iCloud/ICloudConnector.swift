@@ -63,7 +63,7 @@ enum ICloudConnectorError: LocalizedError {
 /// - **共有**: iCloud Drive の共有は限定的なため、スタブ実装
 ///
 /// すべてのファイル操作は `ICloudFileCoordinator` を介して協調します。
-final class ICloudConnector: ProviderConnector {
+final class ICloudConnector: ProviderConnector, @unchecked Sendable {
 
     // MARK: - ProviderConnector
 

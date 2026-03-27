@@ -26,6 +26,7 @@ final class IngestPipeline: @unchecked Sendable {
     ///   - fileURL: 処理するファイルの URL
     ///   - sourceMode: 取り込み元モード（watch / capture / manual 等）
     /// - Returns: 生成・保存された Asset
+    @MainActor
     func process(fileURL: URL, sourceMode: SourceMode) async throws -> Asset {
         SVLogger.ingest.info("IngestPipeline: processing \(fileURL.lastPathComponent, privacy: .public)")
 
@@ -33,39 +34,36 @@ final class IngestPipeline: @unchecked Sendable {
         let metadata = try extractMetadata(from: fileURL)
         SVLogger.ingest.debug("IngestPipeline: metadata extracted kind=\(metadata.kind.rawValue, privacy: .public) size=\(metadata.sizeBytes)")
 
-        // 2. SHA-256 ハッシュ計算（重複検出用）
+        // 2. SHA-256 ハッシュ計算（重複検出用 — バックグラウンドスレッドで実行）
         let sha256Hash = try await computeSHA256(fileURL: fileURL)
         SVLogger.ingest.debug("IngestPipeline: SHA-256 computed for \(fileURL.lastPathComponent, privacy: .public)")
 
-        // 3. SwiftData に Asset 保存（@ModelActor ではなく MainActor コンテキストを前提）
-        let asset = try await MainActor.run {
-            // 重複チェック（同じハッシュが既に存在する場合はスキップ）
-            let descriptor = FetchDescriptor<Asset>(
-                predicate: #Predicate { $0.contentHashSHA256 == sha256Hash }
-            )
-            if let existing = try modelContext.fetch(descriptor).first {
-                SVLogger.ingest.info("IngestPipeline: duplicate detected, skipping \(fileURL.lastPathComponent, privacy: .public) existing=\(existing.assetID, privacy: .public)")
-                return existing
-            }
-
-            let asset = Asset(
-                kind: metadata.kind,
-                sourceMode: sourceMode,
-                capturedAt: metadata.capturedAt,
-                sizeBytes: metadata.sizeBytes
-            )
-            asset.originalPath      = fileURL.path
-            asset.localTempPath     = fileURL.path
-            asset.contentHashSHA256 = sha256Hash
-
-            modelContext.insert(asset)
-            try modelContext.save()
-
-            SVLogger.ingest.info("IngestPipeline: asset saved \(asset.assetID, privacy: .public) kind=\(asset.kind.rawValue, privacy: .public)")
-            return asset
+        // 3. 重複チェック（同じハッシュが既に存在する場合はスキップ）
+        let descriptor = FetchDescriptor<Asset>(
+            predicate: #Predicate { $0.contentHashSHA256 == sha256Hash }
+        )
+        if let existing = try modelContext.fetch(descriptor).first {
+            SVLogger.ingest.info("IngestPipeline: duplicate detected, skipping \(fileURL.lastPathComponent, privacy: .public) existing=\(existing.assetID, privacy: .public)")
+            return existing
         }
 
-        // 4. 分類パイプラインへ引き渡し（Phase 1.8 で実装予定）
+        // 4. SwiftData に Asset 保存
+        let asset = Asset(
+            kind: metadata.kind,
+            sourceMode: sourceMode,
+            capturedAt: metadata.capturedAt,
+            sizeBytes: metadata.sizeBytes
+        )
+        asset.originalPath      = fileURL.path
+        asset.localTempPath     = fileURL.path
+        asset.contentHashSHA256 = sha256Hash
+
+        modelContext.insert(asset)
+        try modelContext.save()
+
+        SVLogger.ingest.info("IngestPipeline: asset saved \(asset.assetID, privacy: .public) kind=\(asset.kind.rawValue, privacy: .public)")
+
+        // 5. 分類パイプラインへ引き渡し（Phase 1.8 で実装予定）
         scheduleClassification(for: asset)
 
         return asset
@@ -179,7 +177,7 @@ extension IngestPipeline {
     /// FolderWatcher の newFileStream() を監視し、順次 process する。
     /// Task がキャンセルされるまでループする。
     func startConsuming(from watcher: FolderWatcher, sourceMode: SourceMode = .watch) -> Task<Void, Never> {
-        Task { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
             let stream = watcher.newFileStream()
             for await fileURL in stream {

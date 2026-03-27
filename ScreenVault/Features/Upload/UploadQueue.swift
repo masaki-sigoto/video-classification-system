@@ -66,7 +66,7 @@ final class UploadQueue: ObservableObject {
         let task = UploadTask(accountID: accountID)
         task.asset = asset
         task.remoteParentFolderID = remoteFolderID
-        task.status = .pending
+        task.setStatus(.pending)
 
         modelContext.insert(task)
         do {
@@ -105,7 +105,7 @@ final class UploadQueue: ObservableObject {
         activeTasks.removeAll { $0.taskID == task.taskID }
 
         // 状態リセット
-        task.status = .pending
+        task.setStatus(.pending)
         task.retryCount = 0
         task.nextRetryAt = nil
         task.lastErrorCode = nil
@@ -125,7 +125,7 @@ final class UploadQueue: ObservableObject {
         activeTasks.removeAll { $0.taskID == task.taskID }
         queuedTasks.removeAll { $0.taskID == task.taskID }
 
-        task.status = .cancelled
+        task.setStatus(.cancelled)
         task.updatedAt = .now
         persistTask(task)
     }
@@ -135,7 +135,7 @@ final class UploadQueue: ObservableObject {
     private func startTask(_ task: UploadTask) {
         SVLogger.upload.info("UploadQueue: start taskID=\(task.taskID, privacy: .public)")
 
-        task.status = .uploading
+        task.setStatus(.uploading)
         task.updatedAt = .now
         activeTasks.append(task)
         persistTask(task)
@@ -163,7 +163,7 @@ final class UploadQueue: ObservableObject {
 
                 // 成功
                 await MainActor.run {
-                    task.status = .completed
+                    task.setStatus(.completed)
                     task.remoteFileID = remoteFileID
                     task.updatedAt = .now
                     self.activeTasks.removeAll { $0.taskID == task.taskID }
@@ -182,7 +182,7 @@ final class UploadQueue: ObservableObject {
             } catch {
                 SVLogger.upload.error("UploadQueue: unexpected error taskID=\(task.taskID, privacy: .public): \(error.localizedDescription, privacy: .public)")
                 await MainActor.run {
-                    task.status = .failed
+                    task.setStatus(.failed)
                     task.lastErrorCode = "unexpected"
                     task.updatedAt = .now
                     self.activeTasks.removeAll { $0.taskID == task.taskID }
@@ -209,7 +209,7 @@ final class UploadQueue: ObservableObject {
 
         // 最大リトライ超過
         await MainActor.run {
-            task.status = .failed
+            task.setStatus(.failed)
             task.lastErrorCode = "max_retry_exceeded"
             task.updatedAt = .now
             self.activeTasks.removeAll { $0.taskID == task.taskID }
@@ -253,7 +253,7 @@ final class UploadQueue: ObservableObject {
         case .networkUnavailable:
             // ネットワーク断: 復帰を待つ（processQueue は observe で再呼び出し）
             task.lastErrorCode = "network_unavailable"
-            task.status = .pending
+            task.setStatus(.pending)
             task.updatedAt = .now
             activeTasks.removeAll { $0.taskID == task.taskID }
             runningTasks.removeValue(forKey: task.taskID)
@@ -274,7 +274,7 @@ final class UploadQueue: ObservableObject {
 
         default:
             // その他のエラー: 失敗として確定
-            task.status = .failed
+            task.setStatus(.failed)
             task.lastErrorCode = error.errorDescription ?? "unknown"
             task.updatedAt = .now
             activeTasks.removeAll { $0.taskID == task.taskID }
@@ -339,11 +339,11 @@ final class UploadQueue: ObservableObject {
         do {
             let allTasks = try modelContext.fetch(descriptor)
             let incompleteTasks = allTasks.filter {
-                $0.status == .pending || $0.status == .uploading
+                $0.statusRawValue == UploadStatus.pending.rawValue || $0.statusRawValue == UploadStatus.uploading.rawValue
             }
             // uploading 状態で残ったものは pending に戻す（再起動対応）
-            for task in incompleteTasks where task.status == .uploading {
-                task.status = .pending
+            for task in incompleteTasks where task.statusRawValue == UploadStatus.uploading.rawValue {
+                task.setStatus(.pending)
                 task.updatedAt = .now
             }
             try modelContext.save()

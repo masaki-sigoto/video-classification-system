@@ -197,7 +197,7 @@ private struct WelcomeStepView: View {
         VStack(spacing: 20) {
             Image(systemName: "camera.viewfinder")
                 .font(.system(size: 60))
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
 
             VStack(spacing: 8) {
                 Text("ScreenVault へようこそ")
@@ -241,7 +241,7 @@ private struct FeatureRow: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .frame(width: 24)
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.headline)
                 Text(description)
@@ -261,7 +261,7 @@ private struct WatchFolderStepView: View {
         VStack(spacing: 20) {
             Image(systemName: "folder.badge.questionmark")
                 .font(.system(size: 48))
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
 
             VStack(spacing: 8) {
                 Text("監視フォルダの選択")
@@ -324,7 +324,7 @@ private struct ScreenshotGuideStepView: View {
         VStack(spacing: 20) {
             Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
 
             VStack(spacing: 8) {
                 Text("スクリーンショット保存先の変更")
@@ -390,7 +390,7 @@ private struct CloudConnectStepView: View {
         VStack(spacing: 20) {
             Image(systemName: "icloud.and.arrow.up.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
 
             VStack(spacing: 8) {
                 Text("クラウドサービスを接続")
@@ -444,7 +444,7 @@ private struct ProviderToggleRow: View {
                 Spacer()
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isSelected ? .accent : .secondary)
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
                     .font(.title3)
             }
             .padding(.horizontal, 16)
@@ -501,7 +501,7 @@ private struct TipRow: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .frame(width: 20)
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
             Text(text)
                 .font(.callout)
         }

@@ -22,7 +22,7 @@ final class ProviderAccount {
     }
 }
 
-enum ProviderType: String, Codable, CaseIterable {
+enum ProviderType: String, Codable, CaseIterable, Sendable {
     case googleDrive
     case oneDrive
     case dropbox

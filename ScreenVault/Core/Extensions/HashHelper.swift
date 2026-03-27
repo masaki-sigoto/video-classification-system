@@ -47,7 +47,7 @@ enum HashHelper {
         while true {
             let chunk: Data
             do {
-                chunk = try handle.read(upToCount: chunkSize)
+                chunk = try handle.read(upToCount: chunkSize) ?? Data()
             } catch {
                 SVLogger.general.error("SHA-256: 読み取りエラー: \(error.localizedDescription, privacy: .public)")
                 throw HashComputationError.readError(fileURL, underlying: error)
